@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# chargen (bash version)
+
+# get number of chars, otherwise 256
+chars=${1:-256};
+# get output file
+# (requested path, or stdout)
+out=${2:-/proc/self/fd/1};
+
+# generate characters
+head -c $chars /dev/urandom >$out;
+

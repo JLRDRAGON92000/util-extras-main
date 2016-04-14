@@ -1,0 +1,135 @@
+#!/bin/bash
+
+# crun: Compile and execute a C program.
+# Requires gcc
+# Compatible with ainfo PS1 mode (Also in Util/)
+
+DEF_INST_DIR="$HOME/bin/crun";
+
+if [ "$#" -lt 1 ];
+then
+	echo -e "\e[01;33musage:\n    crun -a sourcename [compiler args] [args]\n    crun -c sourcename [compiler args]\n    crun -r sourcename [args]\e[00m";
+	exit 2;
+fi
+
+if [ -e "$2.c" ] || [ "$1" == "-i" ] || [ "$1" == "-if" ] || [ "$1" == "-us" ] || [ "$1" == "-uf" ] || [ "$1" == "--help" ];
+then
+	case "$1" in
+		-c)
+			echo -e "\e[01;34mCompiling ${2}...\e[00m";
+			gcc -Wall -g $3 "${2}.c" -o "${2}.x";
+			gccexttmp="$?";
+			if [ "$gccexttmp" -eq 0 ];
+			then
+				echo -e "\e[01;32mCompilation successful.\e[00m";
+				echo $(date "+%d %b %Y, %H:%M")"|${2}|SUCCESS" >"./.cproj.lock";
+				exit 0;
+			else
+				echo -e "\e[01;31mCompilation failed with status $gccexttmp.\e[00m";
+				echo $(date "+%d %b %Y, %H:%M")"|${2}|FAILURE" >"./.cproj.lock";
+				exit $gccexttmp;
+			fi;;
+		-r)
+			args="";
+			let argi=1;
+			for arg in $*;
+			do
+				if [ $argi -gt 2 ];
+				then
+					args="$args $arg";
+				fi
+				let argi+=1;
+			done
+			echo -e "\e[01;34mRunning ${2}\e[00m"
+			./"${2}.x" $args;
+			pxt="$?";
+			if [ "$pxt" -eq 0 ];
+			then
+				echo -e "\e[01;32m${2} completed with status $pxt\e[00m";
+			else
+				echo -e "\e[01;31m${2} failed with status $pxt\e[00m";
+			fi
+			exit $pxt;;
+		-a)
+			echo -e "\e[01;34mCompiling ${2}...\e[00m";
+			gcc -Wall -g $3 "${2}.c" -o "${2}.x";
+			gccexttmp="$?";
+			if [ "$gccexttmp" -eq 0 ];
+			then
+				echo -e "\e[01;32mCompilation successful.\e[00m";
+				echo $(date "+%d %b %Y, %H:%M")"|${2}|SUCCESS" >"./.cproj.lock";
+				
+				args="";
+				let argi=1;
+				for arg in $*;
+				do
+					if [ $argi -gt 3 ];
+					then
+						args="$args $arg";
+					fi
+					let argi+=1;
+				done
+				echo -e "\e[01;34mRunning ${2}\e[00m"
+				./"${2}.x" $args;
+				prgexttmp="$?";
+				if [ "$prgexttmp" -eq 0 ];
+				then
+					echo -e "\e[01;32m${2} completed with status $prgexttmp\e[00m";
+				else
+					echo -e "\e[01;31m${2} failed with status $prgexttmp\e[00m";
+				fi
+				exit $prgexttmp;
+			else
+				echo -e "\e[01;31mCompilation failed with status $gccexttmp.\e[00m";
+				echo $(date "+%d %b %Y, %H:%M")"|${2}|FAILURE" >"./.cproj.lock";
+				exit $gccexttmp;
+			fi;;
+		-us)
+			echo $(date "+%d %b %Y, %H:%M")"|${2}|SUCCESS" >"./.cproj.lock";
+			echo -e "\e[01;34mFalsified .cproj.lock: $2 \"built\" at $(date "+%d %b %Y, %H:%M") with successful result";;
+		-uf)
+			echo $(date "+%d %b %Y, %H:%M")"|${2}|FAILURE" >"./.cproj.lock";
+			echo -e "\e[01;34mFalsified .cproj.lock: $2 \"built\" at $(date "+%d %b %Y, %H:%M") with failed result";;
+		-i)
+			cp "$PWD/$0" "$DEF_INST_DIR";
+			cpresult="$?";
+			chmod 755 "$DEF_INST_DIR";
+			chmodresult="$?";
+			if [ $cpresult -ne 0 ] || [ $chmodresult -ne 0 ];
+			then
+				echo -e "\e[01;31mcrun: An error occured during installation. Check that you have write permission in the default installation directory ${DEF_INST_DIR}.";
+				exit 1;
+			else
+				echo -e "\e[01;34mcrun installed successfully at ${DEF_INST_DIR}.";
+			fi;;
+		-if)
+			cp "$PWD/$0" "$2";
+			cpresult="$?";
+			chmod 755 "$2";
+			chmodresult="$?";
+			if [ $cpresult -ne 0 ] || [ $chmodresult -ne 0 ];
+			then
+				echo -e "\e[01;31mcrun: An error occured during installation. Check that you have write permission in your requested installation directory ${2}.";
+				exit 1;
+			else
+				echo -e "\e[01;34mcrun installed successfully at ${2}.";
+			fi;;
+		--help)
+			echo -e "\e[01;37mcrun\e[00m - Compiles and runs C source files";
+			echo -e "usage:";
+			echo -e "	\e[01;37mcrun\e[00m -a sourcename [compiler args] [args]";
+			echo -e "	\e[01;37mcrun\e[00m -c sourcename [compiler args]";
+			echo -e "	\e[01;37mcrun\e[00m -r sourcename [args]";
+			echo -e "	\e[01;37mcrun\e[00m -i";
+			echo -e "	\e[01;37mcrun\e[00m -if location";
+			echo -e "options:";
+			echo -e "	\e[01;37m-a\e[00m	Compile and run the specified source";
+			echo -e "	\e[01;37m-c\e[00m	Compile the specified source";
+			echo -e "	\e[01;37m-r\e[00m	Run the executable corresponding to the specified source";
+			echo -e "	\e[01;37m-i\e[00m	Install crun at default location ~/bin/crun";
+			echo -e "	\e[01;37m-if\e[00m	Install crun at given location";
+			;;
+	esac
+else
+	echo -e "\e[01;33mSource ${2} not found.\e[00m";
+fi
