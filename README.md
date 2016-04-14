@@ -6,3 +6,5 @@ To install:
 2. `git clone https://github.com/JLRDRAGON92000/util-extras-main.git`
 3. `updutil`
 
+This package also includes the util prompts pack. To install it: `tar xzvf util-prompts-pack.tar.gz -C "$UTIL_DIR/ps1opts.d/"`
+
