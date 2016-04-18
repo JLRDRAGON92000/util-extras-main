@@ -23,7 +23,7 @@ compile () {
 		let "dircount-=1"
 		clspath=$(echo $clsp | cut -f1-$dircount -d"/");
 		# echo -e $clspath;
-		cd $clspath;
+		cd "$clspath";
 	fi
 	# echo $PWD;
 	javac "$(basename $filename).java" &>./.jc.tmp;
@@ -57,11 +57,11 @@ compile () {
 }
 
 runclass () {
-	if [ -z $pwdbak ];
+	if [ -z "$pwdbak" ];
 	then
 		echo -n "";
 	else
-		cd $pwdbak;
+		cd "$pwdbak";
 	fi
 	cls="";
 	clspath="";
@@ -109,7 +109,7 @@ runclass () {
 	
 	# echo $PWD;
 	# echo $clspath;
-	cd $clspath;
+	cd "$clspath";
 	
 	# echo "java $clsl $aargs"
 	java $clsl $aargs;
